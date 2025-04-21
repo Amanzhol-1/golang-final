@@ -1,0 +1,96 @@
+package delieveries
+
+import (
+	"CKit/internal/entity"
+	"CKit/internal/services/shipment"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+// ShipmentHandler aggregates shipment use cases.
+type ShipmentHandler struct {
+	CreateUC *shipment.CreateShipmentUseCase
+	GetUC    *shipment.GetShipmentUseCase
+	ListUC   *shipment.ListShipmentsUseCase
+	UpdateUC *shipment.UpdateShipmentUseCase
+	DeleteUC *shipment.DeleteShipmentUseCase
+}
+
+// NewShipmentHandler constructs a handler with all use cases.
+func NewShipmentHandler(
+	create *shipment.CreateShipmentUseCase,
+	get *shipment.GetShipmentUseCase,
+	list *shipment.ListShipmentsUseCase,
+	update *shipment.UpdateShipmentUseCase,
+	deleteUC *shipment.DeleteShipmentUseCase,
+) *ShipmentHandler {
+	return &ShipmentHandler{
+		CreateUC: create,
+		GetUC:    get,
+		ListUC:   list,
+		UpdateUC: update,
+		DeleteUC: deleteUC,
+	}
+}
+
+// CreateShipment handles POST /shipments
+func (h *ShipmentHandler) CreateShipment(c echo.Context) error {
+	var req entity.Shipment
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid payload"})
+	}
+	ctx := c.Request().Context()
+	sub, err := h.CreateUC.Execute(ctx, &req)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusCreated, sub)
+}
+
+// GetShipment handles GET /shipments/:id
+func (h *ShipmentHandler) GetShipment(c echo.Context) error {
+	id := c.Param("id")
+	ctx := c.Request().Context()
+	s, err := h.GetUC.Execute(ctx, id)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "not found"})
+	}
+	return c.JSON(http.StatusOK, s)
+}
+
+// ListShipments handles GET /shipments
+func (h *ShipmentHandler) ListShipments(c echo.Context) error {
+	ctx := c.Request().Context()
+	list, err := h.ListUC.Execute(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, list)
+}
+
+// UpdateShipment handles PUT /shipments/:id
+func (h *ShipmentHandler) UpdateShipment(c echo.Context) error {
+	id := c.Param("id")
+	var req entity.Shipment
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid payload"})
+	}
+	req.ID = id
+	ctx := c.Request().Context()
+	updated, err := h.UpdateUC.Execute(ctx, &req)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, updated)
+}
+
+// DeleteShipment handles DELETE /shipments/:id
+func (h *ShipmentHandler) DeleteShipment(c echo.Context) error {
+	id := c.Param("id")
+	ctx := c.Request().Context()
+	if err := h.DeleteUC.Execute(ctx, id); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.NoContent(http.StatusNoContent)
+}
