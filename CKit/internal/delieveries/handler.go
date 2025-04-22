@@ -36,12 +36,13 @@ func NewShipmentHandler(
 
 // CreateShipment handles POST /shipments
 func (h *ShipmentHandler) CreateShipment(c echo.Context) error {
-	var req entity.Shipment
+	var req entity.CreateShipmentRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid payload"})
 	}
 	ctx := c.Request().Context()
-	sub, err := h.CreateUC.Execute(ctx, &req)
+	userId := c.Get("userID").(string)
+	sub, err := h.CreateUC.Execute(ctx, userId, &req)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

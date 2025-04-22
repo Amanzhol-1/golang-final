@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+    container_name: shipment_svc
+    environment:
+      HTTP_SERVER_HOST: ${HTTP_SERVER_HOST}
+      HTTP_SERVER_PORT: ${HTTP_SERVER_PORT}
+      DB_DRIVER:        ${DB_DRIVER}
+      DB_HOST:          ${DB_HOST}
+      DB_PORT:          ${DB_PORT}
+      DB_USER:          ${DB_USER}
+      DB_PASSWORD:      ${DB_PASSWORD}
+      DB_NAME:          ${DB_NAME}
+    networks:
+      - app_shared_net
+    depends_on:
+      - database
+
+  database:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      POSTGRES_USER:     ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB:       ${DB_NAME}
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app_shared_net
+
+networks:
+  app_shared_net:
+    external: true

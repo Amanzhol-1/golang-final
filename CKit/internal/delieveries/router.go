@@ -1,6 +1,8 @@
 package delieveries
 
 import (
+	"CKit/internal/middleware"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -8,12 +10,15 @@ type Router struct {
 	echo *echo.Echo
 }
 
-func NewRouter(e *echo.Echo, handler *ShipmentHandler) *Router {
-	e.POST("/shipments", handler.CreateShipment)
-	e.GET("/shipments/:id", handler.GetShipment)
-	e.GET("/shipments", handler.ListShipments)
-	e.PUT("/shipments/:id", handler.UpdateShipment)
-	e.DELETE("/shipments/:id", handler.DeleteShipment)
+func NewRouter(e *echo.Echo, handler *ShipmentHandler, checker middleware.SubscriptionChecker) *Router {
+	grp := e.Group("/shipments")
+	grp.Use(middleware.RequireSubscription(checker))
+
+	grp.POST("", handler.CreateShipment)
+	grp.GET("/:id", handler.GetShipment)
+	grp.GET("", handler.ListShipments)
+	grp.PUT("/:id", handler.UpdateShipment)
+	grp.DELETE("/:id", handler.DeleteShipment)
 	return &Router{echo: e}
 }
 

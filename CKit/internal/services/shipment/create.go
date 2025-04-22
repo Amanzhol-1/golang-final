@@ -18,11 +18,30 @@ func NewCreateShipmentUseCase(r repository.ShipmentRepository) *CreateShipmentUs
 	return &CreateShipmentUseCase{repo: r}
 }
 
-// Execute creates a new shipment with generated ID.
-func (uc *CreateShipmentUseCase) Execute(ctx context.Context, shipment *entity.Shipment) (*entity.Shipment, error) {
-	shipment.ID = uuid.New().String()
-	if err := uc.repo.Save(ctx, shipment); err != nil {
+func (uc *CreateShipmentUseCase) Execute(
+	ctx context.Context,
+	userID string,
+	in *entity.CreateShipmentRequest,
+) (*entity.Shipment, error) {
+	s := &entity.Shipment{
+		ID:              uuid.NewString(),
+		UserID:          userID,
+		FromAddress:     in.FromAddress,
+		ToAddress:       in.ToAddress,
+		PickupTime:      in.PickupTime,
+		DeliveryPrice:   in.DeliveryPrice,
+		PriceNegotiable: in.PriceNegotiable,
+		Weight:          in.Weight,
+		Volume:          in.Volume,
+		CargoType:       in.CargoType,
+		SenderName:      in.SenderName,
+		SenderPhone:     in.SenderPhone,
+		ReceiverName:    in.ReceiverName,
+		ReceiverPhone:   in.ReceiverPhone,
+		AdditionalNotes: in.AdditionalNotes,
+	}
+	if err := uc.repo.Save(ctx, s); err != nil {
 		return nil, err
 	}
-	return shipment, nil
+	return s, nil
 }

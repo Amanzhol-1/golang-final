@@ -5,6 +5,7 @@ import "time"
 // Shipment represents the delivery order details mapped to PostgreSQL columns.
 type Shipment struct {
 	ID              string    `db:"id"`               // unique identifier
+	UserID          string    `db:"user_id"`          // owner (user) of this shipment
 	FromAddress     string    `db:"from_address"`     // адрес отправки
 	ToAddress       string    `db:"to_address"`       // адрес получения
 	PickupTime      time.Time `db:"pickup_time"`      // дата и время забора груза
