@@ -17,6 +17,10 @@ func NewListShipmentsUseCase(r repository.ShipmentRepository) *ListShipmentsUseC
 }
 
 // Execute returns all shipments.
-func (uc *ListShipmentsUseCase) Execute(ctx context.Context) ([]*entity.Shipment, error) {
-	return uc.repo.List(ctx)
+func (uc *ListShipmentsUseCase) ExecuteCustomer(ctx context.Context, userId string) ([]*entity.Shipment, error) {
+	return uc.repo.ListCustomer(ctx, userId)
+}
+
+func (uc *ListShipmentsUseCase) ExecuteDriver(ctx context.Context, userId string) ([]*entity.Shipment, error) {
+	return uc.repo.ListDriver(ctx, userId)
 }

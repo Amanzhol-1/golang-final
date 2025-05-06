@@ -16,6 +16,7 @@ import (
 func HTTP(conn *connections.Connections, cfg *config.HTTPServerConfig) {
 	// Health check endpoint
 	subsSvcURL := os.Getenv("SUBSCRIPTION_URL")
+	authURL := os.Getenv("AUTH_URL")
 
 	if subsSvcURL == "" {
 		fmt.Errorf("SubscriptionMicroService не установлен")
@@ -35,10 +36,11 @@ func HTTP(conn *connections.Connections, cfg *config.HTTPServerConfig) {
 	deleteUC := shipment.NewDeleteShipmentUseCase(repo)
 
 	checker := middleware.NewSubscriptionClient(subsSvcURL)
+	authChecker := middleware.NewAuthClient(authURL)
 
 	handler := delieveries.NewShipmentHandler(createUC, getUC, listUC, updateUC, deleteUC)
 
-	router := delieveries.NewRouter(conn.HTTPClient, handler, checker)
+	router := delieveries.NewRouter(conn.HTTPClient, handler, authChecker, checker)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	log.Printf("Starting HTTP server on %s", addr)

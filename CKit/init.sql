@@ -1,5 +1,13 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+CREATE TYPE shipment_status AS ENUM (
+  'pending',
+  'picked_up',
+  'in_transit',
+  'delivered',
+  'cancelled'
+);
+
 CREATE TABLE shipments (
   id                UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id           TEXT        NOT NULL,
@@ -15,9 +23,7 @@ CREATE TABLE shipments (
   sender_phone      VARCHAR(20)  NOT NULL,
   receiver_name     VARCHAR(255) NOT NULL,
   receiver_phone    VARCHAR(20)  NOT NULL,
-  additional_notes  TEXT
+  additional_notes  TEXT,
+  status            shipment_status  NOT NULL DEFAULT 'pending',
+  picker_id           TEXT        NOT NULL
 );
-
--- Indexes for faster lookups by user and by date
-CREATE INDEX idx_shipments_user_id      ON shipments(user_id);
-CREATE INDEX idx_shipments_pickup_time  ON shipments(pickup_time);

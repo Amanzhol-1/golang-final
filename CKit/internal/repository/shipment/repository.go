@@ -18,7 +18,8 @@ type ShipmentRepository interface {
 	// Delete удаляет заявку по ID
 	Delete(ctx context.Context, id string) error
 	// List возвращает все заявки
-	List(ctx context.Context) ([]*entity.Shipment, error)
+	ListCustomer(ctx context.Context, userId string) ([]*entity.Shipment, error)
+	ListDriver(ctx context.Context, userId string) ([]*entity.Shipment, error)
 }
 
 type DBShipmentRepository struct {
@@ -55,9 +56,20 @@ func (r *DBShipmentRepository) Delete(ctx context.Context, id string) error {
 }
 
 // List returns all shipments.
-func (r *DBShipmentRepository) List(ctx context.Context) ([]*entity.Shipment, error) {
+func (r *DBShipmentRepository) ListCustomer(ctx context.Context, userId string) ([]*entity.Shipment, error) {
 	var list []*entity.Shipment
-	if err := r.db.WithContext(ctx).Find(&list).Error; err != nil {
+
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userId).Find(&list).Error; err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (r *DBShipmentRepository) ListDriver(ctx context.Context, userId string) ([]*entity.Shipment, error) {
+
+	var list []*entity.Shipment
+
+	if err := r.db.WithContext(ctx).Where("picker_id = ?", userId).Find(&list).Error; err != nil {
 		return nil, err
 	}
 	return list, nil
